@@ -1,0 +1,15 @@
+# exclude everything except directory
+
+/server.php
+/composer.lock
+/note.md
+.DS_Store
+.phpunit*
+/.phpunit*
+.amazonq
+.vscode
+/scripts
+/vendor
+GEMINI.md
+/docs
+/tests
