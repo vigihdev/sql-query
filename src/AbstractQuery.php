@@ -34,14 +34,14 @@ abstract class AbstractQuery
     protected array $join = [];
 
     /**
-     * @var int $limit LIMIT value for the query
+     * @var int|null $limit LIMIT value for the query
      */
-    protected int $limit;
+    protected ?int $limit = null;
 
     /**
-     * @var int $offset OFFSET value for the query
+     * @var int|null $offset OFFSET value for the query
      */
-    protected int $offset;
+    protected ?int $offset = null;
 
     /**
      * @var string[] $groupBy GROUP BY columns
@@ -54,9 +54,9 @@ abstract class AbstractQuery
     protected array $orderBy = [];
 
     /**
-     * @var bool|string $distinct DISTINCT flag or expression
+     * @var bool|string|null $distinct DISTINCT flag or expression
      */
-    protected $distinct;
+    protected ?bool $distinct = null;
 
 
     /**
