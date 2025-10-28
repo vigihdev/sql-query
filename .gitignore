@@ -1,15 +1,25 @@
-# exclude everything except directory
+# Composer
+/vendor/
+composer.lock
 
-/server.php
-/composer.lock
-/note.md
+# IDE
+.vscode/
+.idea/
+
+# OS
 .DS_Store
-.phpunit*
-/.phpunit*
-.amazonq
-.vscode
-/scripts
-/vendor
+Thumbs.db
+
+# Test artifacts (keep tests/ folder but ignore cache)
+.phpunit.result.cache
+/coverage/
+
+# Development files
+/server.php
+/note.md
 GEMINI.md
-/docs
-/tests
+/docs/
+/scripts/
+
+# Amazon Q
+.amazonq/
