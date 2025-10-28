@@ -10,7 +10,7 @@ namespace SqlQuery\Contracts;
  * Defines contract for composite query conditions with operator and sub-conditions
  *
  */
-interface CompositeInterface
+interface CompositeInterface extends ExpressionInterface
 {
     /**
      * Get the logical operator for combining conditions

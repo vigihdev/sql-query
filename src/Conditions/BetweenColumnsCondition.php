@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace SqlQuery\Conditions;
 
-use SqlQuery\Contracts\ConditionInterface;
+use SqlQuery\Contracts\{ConditionInterface, BuilderCondtionInterface};
 
 /**
  * BetweenColumnsCondition
@@ -12,7 +12,7 @@ use SqlQuery\Contracts\ConditionInterface;
  * Represents BETWEEN condition for comparing values between two columns
  *
  */
-class BetweenColumnsCondition implements ConditionInterface
+class BetweenColumnsCondition implements ConditionInterface, BuilderCondtionInterface
 {
     /**
      * @var string $operator the operator to use (e.g. `BETWEEN` or `NOT BETWEEN`)
@@ -94,5 +94,15 @@ class BetweenColumnsCondition implements ConditionInterface
         }
 
         return new static($operands[0], $operator, $operands[1], $operands[2]);
+    }
+
+    /**
+     * Build the simple condition into SQL string
+     *
+     * @return string Generated SQL condition
+     */
+    public function build(): string
+    {
+        return "{$this->value} {$this->operator} {$this->intervalStartColumn} AND {$this->intervalEndColumn}";
     }
 }

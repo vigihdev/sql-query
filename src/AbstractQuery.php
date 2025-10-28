@@ -21,7 +21,7 @@ abstract class AbstractQuery
     /**
      * @var string $from FROM table name
      */
-    protected string $from;
+    protected ?string $from = null;
 
     /**
      * @var array $where WHERE conditions array

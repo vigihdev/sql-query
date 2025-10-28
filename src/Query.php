@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace SqlQuery;
 
-use SqlQuery\Contracts\QueryContract;
-use SqlQuery\Processor\{JoinProcessor, WhereProcessor};
+use SqlQuery\Conditions\JoinCondition;
+use SqlQuery\Contracts\{BuilderCondtionInterface, ExpressionInterface, QueryContract};
+use SqlQuery\Factories\ConditionFactory;
+use SqlQuery\Parsers\ConditionParser;
 
 /**
  * Query
@@ -76,12 +78,32 @@ class Query extends AbstractQuery implements QueryContract
     public function where($condition, array $params = []): static
     {
 
-        $where = new WhereProcessor($condition, $params);
-        if (is_array($this->where) && !empty($this->where)) {
-            $this->where = array_merge($this->where, ['AND ' . $where->build()]);
+        // Handle string condition with parameters
+        if (is_string($condition)) {
+            $this->where[] = empty($this->where) ? $condition :
+                "AND (" . $condition . ")";
             return $this;
         }
-        $this->where[] = $where->build();
+
+        if ($condition instanceof ExpressionInterface) {
+            if ($condition instanceof BuilderCondtionInterface) {
+                $this->where[] = empty($this->where) ? $condition->build() :
+                    "AND (" . $condition->build() . ")";
+                return $this;
+            }
+            return $this;
+        }
+
+        // Handle array condition
+        if (is_array($condition)) {
+            $parser = new ConditionParser(factory: new ConditionFactory());
+            $builder = $parser->parse($condition);
+            if ($builder instanceof BuilderCondtionInterface) {
+                $this->where[] = empty($this->where) ? $builder->build() :
+                    "AND (" . $builder->build() . ")";
+                return $this;
+            }
+        }
         return $this;
     }
 
@@ -96,14 +118,30 @@ class Query extends AbstractQuery implements QueryContract
     {
 
         // Handle string condition with parameters
-        if (is_string($condition) && !empty($params)) {
+        if (is_string($condition)) {
+            $this->where[] = empty($this->where) ? $condition :
+                "AND (" . $condition . ")";
+            return $this;
+        }
+
+        if ($condition instanceof ExpressionInterface) {
+            if ($condition instanceof BuilderCondtionInterface) {
+                $this->where[] = empty($this->where) ? $condition->build() :
+                    "AND (" . $condition->build() . ")";
+                return $this;
+            }
             return $this;
         }
 
         // Handle array condition
         if (is_array($condition)) {
-            $where = new WhereProcessor($condition, $params);
-            $this->where = array_merge($this->where, ['AND ' . $where->build()]);
+            $parser = new ConditionParser(factory: new ConditionFactory());
+            $builder = $parser->parse($condition);
+            if ($builder instanceof BuilderCondtionInterface) {
+                $this->where[] = empty($this->where) ? $builder->build() :
+                    "AND (" . $builder->build() . ")";
+                return $this;
+            }
         }
 
         return $this;
@@ -121,18 +159,53 @@ class Query extends AbstractQuery implements QueryContract
     {
 
         // Handle string condition with parameters
-        if (is_string($condition) && !empty($params)) {
+        if (is_string($condition)) {
+            $this->where[] = empty($this->where) ? $condition :
+                "OR (" . $condition . ")";
+            return $this;
+        }
+
+        if ($condition instanceof ExpressionInterface) {
+            if ($condition instanceof BuilderCondtionInterface) {
+                $this->where[] = empty($this->where) ? $condition->build() :
+                    "OR (" . $condition->build() . ")";
+                return $this;
+            }
             return $this;
         }
 
         // Handle array condition
         if (is_array($condition)) {
-            $where = new WhereProcessor($condition, $params);
-            $this->where = array_merge($this->where, ['OR ' . $where->build()]);
+            $parser = new ConditionParser(factory: new ConditionFactory());
+            $builder = $parser->parse($condition);
+            if ($builder instanceof BuilderCondtionInterface) {
+                $this->where[] = empty($this->where) ? $builder->build() :
+                    "OR (" . $builder->build() . ")";
+                return $this;
+            }
         }
 
         return $this;
     }
+
+
+    /**
+     * Add AND WHERE condition with filtering (ignores empty values)
+     *
+     * @param array $condition Hash array of conditions
+     * @return self
+     */
+    public function andFilterWhere(array $condition): static
+    {
+
+        $condition = $this->filterCondition($condition);
+        if (is_array($condition)) {
+            $this->andWhere($condition);
+        }
+
+        return $this;
+    }
+
 
     /**
      * Add filtered comparison condition with operator detection
@@ -152,23 +225,6 @@ class Query extends AbstractQuery implements QueryContract
         }
 
         return $this->andFilterWhere([$operator, $name, $value]);
-    }
-
-    /**
-     * Add AND WHERE condition with filtering (ignores empty values)
-     *
-     * @param array $condition Hash array of conditions
-     * @return self
-     */
-    public function andFilterWhere(array $condition): static
-    {
-
-        $condition = $this->filterCondition($condition);
-        if (is_array($condition)) {
-            $this->andWhere($condition);
-        }
-
-        return $this;
     }
 
 
@@ -200,9 +256,18 @@ class Query extends AbstractQuery implements QueryContract
     {
 
         if (count($condition) === 2) {
-            array_unshift($condition, ...[$type, $table]);
-            $join = new JoinProcessor($condition);
-            $this->join = array_merge($this->join, [$join->build()]);
+            $builder = new JoinCondition(
+                operator: $type,
+                table: $table,
+                columnTable: $condition[0],
+                columnReferensi: $condition[1],
+            );
+
+            if ($builder instanceof BuilderCondtionInterface) {
+                $this->join[] = $builder->build();
+                return $this;
+            }
+
             return $this;
         }
 

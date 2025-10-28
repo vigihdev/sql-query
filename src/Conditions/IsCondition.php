@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace SqlQuery\Conditions;
 
-use SqlQuery\Contracts\ExpressionInterface;
+use SqlQuery\Contracts\{BuilderCondtionInterface, ExpressionInterface};
 
-class IsCondition implements ExpressionInterface
+class IsCondition implements ExpressionInterface, BuilderCondtionInterface
 {
 
     /**
@@ -57,5 +57,15 @@ class IsCondition implements ExpressionInterface
     public function getValue()
     {
         return $this->value;
+    }
+
+    /**
+     * Build the simple condition into SQL string
+     *
+     * @return string Generated SQL condition
+     */
+    public function build(): string
+    {
+        return "{$this->column} {$this->operator}";
     }
 }
